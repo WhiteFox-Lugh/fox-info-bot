@@ -42,7 +42,7 @@ func PostTextTweet(api *anaconda.TwitterApi) {
 	// body : array of tweet body
 	var body FoxText
 
-	jsonData, err := ioutil.ReadFile("./tweet/tweet_body.json")
+	jsonData, err := ioutil.ReadFile("./tweet_body.json")
 	if err != nil {
 		panic(err.Error())
 	}
@@ -52,7 +52,7 @@ func PostTextTweet(api *anaconda.TwitterApi) {
 	rand.Seed(time.Now().UnixNano())
 	n := rand.Intn(len(body.Body))
 	text := body.Body[n]
-	tweet, err := api.PostTweet(text, nil)
+	tweet, err := api.PostTweet(text+"\n(bot)", nil)
 
 	if err != nil {
 		panic(err)
@@ -103,7 +103,7 @@ func PostImgTweet(api *anaconda.TwitterApi) {
 	// tweet
 	v := url.Values{}
 	v.Add("media_ids", img.MediaIDString)
-	api.PostTweet("こゃーん\n"+imgLink, v)
+	api.PostTweet("らんだむこゃーんいめーじ (bot)\n"+imgLink, v)
 	return
 }
 
@@ -111,6 +111,14 @@ func main() {
 	// authentication
 	api := SetAPI()
 
-	// post img tweeet
-	PostImgTweet(api)
+	rand.Seed(time.Now().UnixNano())
+	n := rand.Intn(2)
+
+	if n == 0 {
+		// post img tweet
+		PostImgTweet(api)
+	} else if n == 1 {
+		// post text tweet
+		PostTextTweet(api)
+	}
 }
