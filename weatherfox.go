@@ -4,9 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/ChimeraCoder/anaconda"
+	"github.com/dghubble/oauth1"
 	"io/ioutil"
 	"math"
 	"net/http"
+	"net/url"
 	"os"
 	"strconv"
 	"strings"
@@ -38,8 +40,18 @@ type Weather struct {
 // WeatherFox : show weather forecast on screen name
 func WeatherFox(api *anaconda.TwitterApi) {
 	const screenName = "Arthur_Lugh"
-	//jsonData := getJSON()
-	//	weatherEmojiStr := weatherEmoji(strconv.Itoa(jsonData.Current.Weather[0].ID))
+	const baseURL = "https://api.twitter.com/1.1/account/update_profile.json"
+	var consumerKey = os.Getenv("CONSUMER_KEY")
+	var consumerKeySecret = os.Getenv("CONSUMER_KEY_SECRET")
+	var accessToken = os.Getenv("ACCESS_TOKEN")
+	var accessTokenSecret = os.Getenv("ACCESS_TOKEN_SECRET")
+	jsonData := getJSON()
+	weatherEmojiStr := weatherEmoji(strconv.Itoa(jsonData.Current.Weather[0].ID))
+	fmt.Println("weather -> " + weatherEmojiStr)
+
+	config := oauth1.NewConfig(consumerKey, consumerKeySecret)
+	token := oauth1.NewToken(accessToken, accessTokenSecret)
+	client := config.Client(oauth1.NoContext, token)
 
 	userObj, err := api.GetUsersShow(screenName, nil)
 
@@ -47,7 +59,28 @@ func WeatherFox(api *anaconda.TwitterApi) {
 		panic(err)
 	}
 
-	fmt.Println(userObj)
+	currentName := userObj.Name
+	idx := strings.Index(currentName, "/")
+	if idx == -1 {
+		idx = len(currentName)
+	}
+	newName := currentName[:idx] + "/" + weatherEmojiStr
+
+	values := url.Values{}
+	values.Add("name", newName)
+
+	//リクエストの送信
+	request, err := http.NewRequest("POST", baseURL+"?"+values.Encode(), nil)
+	if err != nil {
+		panic(err)
+	}
+
+	response, err := client.Do(request)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(response)
 
 	return
 }

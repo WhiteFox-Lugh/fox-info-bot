@@ -14,8 +14,6 @@ func SetAPI() *anaconda.TwitterApi {
 	var accessToken = os.Getenv("ACCESS_TOKEN")
 	var accessTokenSecret = os.Getenv("ACCESS_TOKEN_SECRET")
 
-	// anaconda.SetConsumerKey(consumerKey)
-	// anaconda.SetConsumerSecret(consumerKeySecret)
 	ret := anaconda.NewTwitterApiWithCredentials(accessToken, accessTokenSecret, consumerKey, consumerKeySecret)
 
 	return ret
