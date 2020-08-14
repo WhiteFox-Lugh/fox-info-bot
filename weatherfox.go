@@ -40,6 +40,7 @@ type Weather struct {
 // WeatherFox : show weather forecast on screen name
 func WeatherFox(api *anaconda.TwitterApi) {
 	const screenName = "Arthur_Lugh"
+	const color = "FF367F"
 	const baseURL = "https://api.twitter.com/1.1/account/update_profile.json"
 	var consumerKey = os.Getenv("CONSUMER_KEY")
 	var consumerKeySecret = os.Getenv("CONSUMER_KEY_SECRET")
@@ -68,7 +69,7 @@ func WeatherFox(api *anaconda.TwitterApi) {
 
 	values := url.Values{}
 	values.Add("name", newName)
-
+	values.Add("profile_link_color", color)
 	//リクエストの送信
 	request, err := http.NewRequest("POST", baseURL+"?"+values.Encode(), nil)
 	if err != nil {
