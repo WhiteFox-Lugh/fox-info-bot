@@ -95,14 +95,12 @@ func WeatherForecast(api *anaconda.TwitterApi) {
 	tempStr := "気温: 最高 " + roundedMaxTemp + "℃ / 最低 " + roundedMinTemp + "℃"
 
 	tweetText = tweetTextHeader + "\n" + weatherEmojiStr + "\n" + tempStr
-	/*	tweet, err := api.PostTweet(tweetText+"\n(bot)", nil)
+	_, err := api.PostTweet(tweetText+"\n(bot)", nil)
 
-		if err != nil {
-			panic(err)
-		}
-	*/
+	if err != nil {
+		panic(err)
+	}
 
-	fmt.Println(tweetText)
 	return
 }
 
