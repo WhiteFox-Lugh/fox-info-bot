@@ -183,11 +183,11 @@ func weatherEmoji(str string) string {
 		// Atmosphere : mist / fog ...
 		ret = "🌫"
 	} else if strings.HasPrefix(str, "8") {
-		if strings.HasSuffix(str, "00") {
-			// Clear
+		if strings.HasSuffix(str, "00") || strings.HasSuffix(str, "01") {
+			// Clear (800) or few clouds (801 : 11%-25%)
 			ret = "☀"
-		} else if strings.HasSuffix(str, "01") || strings.HasSuffix(str, "02") {
-			// few clouds or scattered clouds
+		} else if strings.HasSuffix(str, "02") || strings.HasSuffix(str, "03") {
+			// scattered clouds (802 : 25%-50%) or broken clouds (803 : 51%-84%)
 			ret = "⛅"
 		} else {
 			// broken clouds or overcast clouds
