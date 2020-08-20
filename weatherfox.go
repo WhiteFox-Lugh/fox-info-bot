@@ -7,6 +7,7 @@ import (
 	"github.com/dghubble/oauth1"
 	"io/ioutil"
 	"math"
+	"math/rand"
 	"net/http"
 	"net/url"
 	"os"
@@ -20,6 +21,7 @@ type WeatherInfo struct {
 	Current Hourly   `json:"current"`
 	Offset  int      `json:"timezone_offset"`
 	Hourly  []Hourly `json:"hourly"`
+	Daily   []Daily  `json:"daily"`
 }
 
 // Hourly : hourly forecast
@@ -32,6 +34,15 @@ type Hourly struct {
 	Weather   []Weather `json:"weather"`
 }
 
+// Daily : daily forecast
+type Daily struct {
+	Sunrise  int64   `json:"sunrise"`
+	Sunset   int64   `json:"sunset"`
+	Pressure int     `json:"pressure"`
+	Humidity int     `json:"humidity"`
+	Wind     float64 `json:"wind_speed"`
+}
+
 // Weather : weather information
 type Weather struct {
 	ID int `json:"id"`
@@ -40,14 +51,13 @@ type Weather struct {
 // WeatherFox : show weather forecast on screen name
 func WeatherFox(api *anaconda.TwitterApi) {
 	const screenName = "Arthur_Lugh"
-	const color = "FF367F"
 	const baseURL = "https://api.twitter.com/1.1/account/update_profile.json"
 	var consumerKey = os.Getenv("CONSUMER_KEY")
 	var consumerKeySecret = os.Getenv("CONSUMER_KEY_SECRET")
 	var accessToken = os.Getenv("ACCESS_TOKEN")
 	var accessTokenSecret = os.Getenv("ACCESS_TOKEN_SECRET")
 	jsonData := getJSON()
-	weatherEmojiStr := weatherEmoji(strconv.Itoa(jsonData.Current.Weather[0].ID))
+	weatherEmojiStr, face := weatherEmoji(strconv.Itoa(jsonData.Current.Weather[0].ID))
 	fmt.Println("weather -> " + weatherEmojiStr)
 
 	config := oauth1.NewConfig(consumerKey, consumerKeySecret)
@@ -61,15 +71,15 @@ func WeatherFox(api *anaconda.TwitterApi) {
 	}
 
 	currentName := userObj.Name
-	idx := strings.Index(currentName, "/")
+	idx := strings.Index(currentName, "(")
 	if idx == -1 {
 		idx = len(currentName)
 	}
-	newName := currentName[:idx] + "/" + weatherEmojiStr
+	newName := currentName[:idx] + face + weatherEmojiStr
 
 	values := url.Values{}
 	values.Add("name", newName)
-	values.Add("profile_link_color", color)
+
 	//リクエストの送信
 	request, err := http.NewRequest("POST", baseURL+"?"+values.Encode(), nil)
 	if err != nil {
@@ -93,8 +103,9 @@ func round(f float64) float64 {
 
 // WeatherForecast : post today's weather forecast
 func WeatherForecast(api *anaconda.TwitterApi) {
-	const tweetTextHeader = "(っ ॑꒳ ॑)っ/☀おてんき at 京都（左京区）\n"
+	const tweetTextHeader = "(っ ॑꒳ ॑)っ/ 天気(京都市左京区)\n"
 	var weatherEmojiStr string
+	var emoji string
 	var tweetText string
 	var minTemperature float64
 	var maxTemperature float64
@@ -112,23 +123,57 @@ func WeatherForecast(api *anaconda.TwitterApi) {
 		} else if i == 12 {
 			weatherEmojiStr += "\nPM : "
 		}
-		weatherEmojiStr += weatherEmoji(strconv.Itoa(jsonData.Hourly[i].Weather[0].ID))
+		emoji, _ = weatherEmoji(strconv.Itoa(jsonData.Hourly[i].Weather[0].ID))
+		weatherEmojiStr += emoji
 
 		minTemperature = math.Min(minTemperature, jsonData.Hourly[i].Temp)
 		maxTemperature = math.Max(maxTemperature, jsonData.Hourly[i].Temp)
 	}
 
-	// get time
-	jst := time.FixedZone("Asia/Tokyo", 9*60*60)
-	nowUTC := time.Now().UTC()
-	nowJST := nowUTC.In(jst)
-	fmt.Println(nowJST.Format("2006-01-02"))
-
+	// get temperature
 	roundedMinTemp := strconv.FormatFloat(round(minTemperature), 'f', 0, 32)
 	roundedMaxTemp := strconv.FormatFloat(round(maxTemperature), 'f', 0, 32)
-	tempStr := "気温: 最高 " + roundedMaxTemp + "℃ / 最低 " + roundedMinTemp + "℃"
+	tempStr := "気温🌡: 最高 " + roundedMaxTemp + "℃ / 最低 " + roundedMinTemp + "℃"
+	if maxTemperature >= 35 {
+		tempStr += " (猛暑日)"
+	} else if maxTemperature >= 30 {
+		tempStr += " (真夏日)"
+	} else if maxTemperature >= 25 {
+		tempStr += " (夏日)"
+	} else if maxTemperature < 0 {
+		tempStr += " (真冬日)"
+	} else if minTemperature < 0 {
+		tempStr += "(冬日)"
+	}
 
-	tweetText = tweetTextHeader + "\n" + weatherEmojiStr + "\n" + tempStr
+	// get windspeed
+	windspeed := jsonData.Daily[0].Wind
+	windStr := "風速: " + strconv.FormatFloat(jsonData.Daily[0].Wind, 'f', 0, 32) + " m/s"
+	if windspeed >= 30 {
+		windStr += " (猛烈な風)"
+	} else if windspeed >= 20 {
+		windStr += " (非常に強い風)"
+	} else if windspeed >= 15 {
+		windStr += " (強い風)"
+	} else if windspeed >= 10 {
+		windStr += " (やや強い風)"
+	}
+
+	// get humidity
+	humidity := jsonData.Daily[0].Humidity
+	humidStr := "湿度: " + strconv.Itoa(humidity) + " %"
+
+	// get pressure
+	pressure := jsonData.Daily[0].Pressure
+	preStr := "気圧: " + strconv.Itoa(pressure) + " hPa"
+
+	// sunset and sunrise
+	sunriseJST := time.Unix(jsonData.Daily[0].Sunrise, 9*60*60)
+	sunsetJST := time.Unix(jsonData.Daily[0].Sunset, 9*60*60)
+	const layout = "15:04:05"
+	sunTime := "日の出 " + sunriseJST.Format(layout) + " / 日の入り " + sunsetJST.Format(layout)
+
+	tweetText = tweetTextHeader + "\n" + weatherEmojiStr + "\n" + tempStr + "\n" + windStr + "\n" + humidStr + "\n" + preStr + "\n" + sunTime
 	_, err := api.PostTweet(tweetText+"\n(bot)", nil)
 
 	if err != nil {
@@ -165,36 +210,44 @@ func getJSON() WeatherInfo {
 }
 
 // weatherEmoji : return weather emoji
-func weatherEmoji(str string) string {
-	var ret string
+func weatherEmoji(str string) (weather string, face string) {
+	var faceArray = [...]string{"(っ ॑꒳ ॑)っ/", "(っ˘꒳˘)っ/", "() ੭•͈ω•͈)っ/", "(*`꒳´)っ/"}
+	const scared = "(っºΔº)っ/"
+
 	if strings.HasPrefix(str, "2") {
 		// Thunderstorm
-		ret = "🌩"
+		weather = "⚡"
+		face = scared
+		return
 	} else if strings.HasPrefix(str, "3") {
 		// Drizzle
-		ret = "☂"
+		weather = "☂"
 	} else if strings.HasPrefix(str, "5") {
 		// Rain
-		ret = "☔"
+		weather = "☔"
 	} else if strings.HasPrefix(str, "6") {
 		// Snow
-		ret = "❄"
+		weather = "❄"
 	} else if strings.HasPrefix(str, "7") {
 		// Atmosphere : mist / fog ...
-		ret = "🌫"
+		weather = "🌫"
 	} else if strings.HasPrefix(str, "8") {
 		if strings.HasSuffix(str, "00") || strings.HasSuffix(str, "01") {
 			// Clear (800) or few clouds (801 : 11%-25%)
-			ret = "☀"
+			weather = "☀"
 		} else if strings.HasSuffix(str, "02") || strings.HasSuffix(str, "03") {
 			// scattered clouds (802 : 25%-50%) or broken clouds (803 : 51%-84%)
-			ret = "⛅"
+			weather = "⛅"
 		} else {
 			// broken clouds or overcast clouds
-			ret = "☁"
+			weather = "☁"
 		}
 	} else {
-		ret = "❔"
+		weather = "❔"
 	}
-	return ret
+	// face generate
+	rand.Seed(time.Now().UnixNano())
+	n := rand.Intn(len(faceArray))
+	face = faceArray[n]
+	return
 }
