@@ -213,7 +213,7 @@ func getJSON() WeatherInfo {
 
 // weatherEmoji : return weather emoji
 func weatherEmoji(str string) (weather string, face string) {
-	var faceArray = [...]string{"(っ ॑꒳ ॑)っ/", "(っ˘꒳˘)っ/", "() ੭•͈ω•͈)っ/", "(*`꒳´)っ/"}
+	var faceArray = [...]string{"(っ ॑꒳ ॑)っ/", "(っ˘꒳˘)っ/", "( ੭•͈ω•͈)っ/", "(*`꒳´)っ/"}
 	const scared = "(っºΔº)っ/"
 
 	if strings.HasPrefix(str, "2") {
