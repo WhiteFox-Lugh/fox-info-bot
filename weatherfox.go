@@ -168,8 +168,8 @@ func WeatherForecast(api *anaconda.TwitterApi) {
 	preStr := "気圧: " + strconv.Itoa(pressure) + " hPa"
 
 	// sunset and sunrise
-	sunriseJST := time.Unix(jsonData.Daily[0].Sunrise, 9*60*60)
-	sunsetJST := time.Unix(jsonData.Daily[0].Sunset, 9*60*60)
+	sunriseJST := time.Unix(jsonData.Daily[0].Sunrise, 9*60*60*1000000000)
+	sunsetJST := time.Unix(jsonData.Daily[0].Sunset, 9*60*60*1000000000)
 	const layout = "15:04:05"
 	sunTime := "日の出 " + sunriseJST.Format(layout) + " / 日の入り " + sunsetJST.Format(layout)
 
