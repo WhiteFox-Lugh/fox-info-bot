@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/ChimeraCoder/anaconda"
 	"net/url"
 	"strconv"
@@ -33,7 +32,6 @@ func FoxStatus(api *anaconda.TwitterApi) {
 	day := time.Now()
 	timeStr := day.Format(dateFormat)
 	currentDayObj, _ := time.ParseInLocation(dateFormat, timeStr, jst)
-	fmt.Println(currentDayObj)
 
 	count := 0
 
@@ -59,6 +57,10 @@ func FoxStatus(api *anaconda.TwitterApi) {
 		}
 	}
 	tweetText := "(っ ॑꒳ ॑c).+(" + day.Format(dateFormat) + " Report)\n前日ツイート数（bot 除外）:" + strconv.Itoa(count)
-	fmt.Println(tweetText)
+	_, postErr := api.PostTweet(tweetText+"\n(bot)", nil)
+
+	if postErr != nil {
+		panic(postErr)
+	}
 	return
 }
