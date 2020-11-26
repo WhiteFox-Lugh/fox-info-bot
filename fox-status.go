@@ -143,10 +143,10 @@ func FoxStatus(api *anaconda.TwitterApi) {
 	tweetCommitText := "GitHub Event 数 : " + strconv.Itoa(eventNum)
 	tweetText := tweetHeader + "\n" + tweetCountText + "\n" + tweetCommitText
 	fmt.Println(tweetText)
-	//_, postErr := api.PostTweet(tweetText+"\n(bot)", nil)
+	_, postErr := api.PostTweet(tweetText+"\n(bot)", nil)
 
-	//if postErr != nil {
-	//	panic(postErr)
-	//}
+	if postErr != nil {
+		panic(postErr)
+	}
 	return
 }
