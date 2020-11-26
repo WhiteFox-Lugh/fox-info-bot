@@ -61,7 +61,6 @@ func countTweetNum(api *anaconda.TwitterApi) (count int, day time.Time) {
 
 // FoxStatus : get today's status
 func FoxStatus(api *anaconda.TwitterApi) {
-	const dateFormat = "2006-01-02"
 
 	// 一日のツイート数を取得
 	count, day := countTweetNum(api)
