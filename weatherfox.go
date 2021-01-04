@@ -3,8 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/ChimeraCoder/anaconda"
-	"github.com/dghubble/oauth1"
 	"io/ioutil"
 	"math"
 	"math/rand"
@@ -14,6 +12,9 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/ChimeraCoder/anaconda"
+	"github.com/dghubble/oauth1"
 )
 
 // WeatherInfo : weather data from OpenWeather
