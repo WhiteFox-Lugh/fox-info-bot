@@ -104,7 +104,7 @@ func round(f float64) float64 {
 
 // WeatherForecast : post today's weather forecast
 func WeatherForecast(api *anaconda.TwitterApi) {
-	const tweetTextHeader = "(っ ॑꒳ ॑)っ/ 天気(京都市左京区)\n"
+	const tweetTextHeader = "(っ ॑꒳ ॑)っ/ 天気(東京都品川区)\n"
 	var weatherEmojiStr string
 	var emoji string
 	var tweetText string
@@ -191,8 +191,10 @@ func getJSON() WeatherInfo {
 	// ret : JSON data
 	var ret WeatherInfo
 	var appID = os.Getenv("APP_ID")
+	var latitude = os.Getenv("LATITUDE")
+	var longitude = os.Getenv("LONGITUDE")
 
-	url := "https://api.openweathermap.org/data/2.5/onecall?lat=35.02&lon=135.78&units=metric&appid=" + appID
+	url := "https://api.openweathermap.org/data/2.5/onecall?lat=" + latitude + "&lon=" + longitude +"&units=metric&appid=" + appID
 
 	req, _ := http.NewRequest("GET", url, nil)
 

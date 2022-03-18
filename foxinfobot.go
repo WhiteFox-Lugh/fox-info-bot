@@ -3,8 +3,9 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/ChimeraCoder/anaconda"
 	"os"
+
+	"github.com/ChimeraCoder/anaconda"
 )
 
 // SetAPI : setting client
@@ -25,7 +26,7 @@ func PrintHelp() {
 	fmt.Println("---------------------")
 	fmt.Println("img : post image tweet (using randomfox api)")
 	fmt.Println("text : post text tweet about fox")
-	fmt.Println("weather : change twitter screen name (depends on current weather at Kyoto)")
+	fmt.Println("weather : change twitter screen name (depends on current weather at Tokyo)")
 	fmt.Println("foxstatus : tweet todays twitter usage")
 	fmt.Println("---------------------")
 	return
